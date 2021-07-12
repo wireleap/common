@@ -4,7 +4,9 @@ package initcmd
 
 import (
 	"crypto/ed25519"
+	"embed"
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/wireleap/common/api/jsonb"
@@ -17,34 +19,44 @@ const (
 	Pub  = "key.pub"
 )
 
-var Cmd = &cli.Subcmd{
-	FlagSet: flag.NewFlagSet("init", flag.ExitOnError),
-	Desc:    "Generate ed25519 keypair (key.seed, key.pub) and exit",
-	Run: func(fm fsdir.T) {
-		pk, sk, err := ed25519.GenerateKey(nil)
+func Cmd(arg0 string, steps ...func(fsdir.T) error) *cli.Subcmd {
+	return &cli.Subcmd{
+		FlagSet: flag.NewFlagSet("init", flag.ExitOnError),
+		Desc:    "Initialize %s files",
+		Run: func(fm fsdir.T) {
+			for _, s := range steps {
+				if err := s(fm); err != nil {
+					log.Fatal("error while initializing:", err)
+				}
+			}
+		},
+	}
+}
 
-		if err != nil {
-			log.Fatal(err)
+func KeypairStep(f fsdir.T) error {
+	pk, sk, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		return err
+	}
+	log.Printf("writing ed25519 private key seed to %s", f.Path(Seed))
+	if err = f.Set(jsonb.B(sk.Seed()), Seed); err != nil {
+		return err
+	}
+	if err = f.Chmod(0600, Seed); err != nil {
+		return err
+	}
+	log.Printf("writing ed25519 public key to %s", f.Path(Pub))
+	if err = f.Set(jsonb.PK(pk), Pub); err != nil {
+		return err
+	}
+	return nil
+}
+
+func UnpackStep(fs embed.FS) func(fsdir.T) error {
+	return func(f fsdir.T) error {
+		if err := cli.UnpackEmbedded(fs, f, false); err != nil {
+			return fmt.Errorf("error unpacking embedded files: %s", err)
 		}
-
-		log.Printf("writing ed25519 private key seed to %s", fm.Path(Seed))
-		err = fm.Set(jsonb.B(sk.Seed()), Seed)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = fm.Chmod(0600, Seed)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("writing ed25519 public key to %s", fm.Path(Pub))
-		err = fm.Set(jsonb.PK(pk), Pub)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	},
+		return nil
+	}
 }
