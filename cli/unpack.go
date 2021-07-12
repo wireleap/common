@@ -39,16 +39,14 @@ func UnpackEmbedded(f embed.FS, fm fsdir.T, force bool) error {
 			log.Printf("error reading embedded file %s: %s", p, err)
 			return err
 		}
-		mode := fs.FileMode(0755)
-		switch path.Ext(p) {
-		case "so", "html", "js":
-			// no need to +x
-			mode = 0644
+		mode := fs.FileMode(0644)
+		if ok, err := path.Match("scripts/default/*", p); err == nil && ok && path.Base(p) != "README" {
+			// +x
+			mode = 0755
 		}
-		switch path.Base(p) {
-		case "README", "DISCLAIMER":
-			// no need to +x
-			mode = 0644
+		if path.Base(p) == "wireleap_tun" {
+			// +x
+			mode = 0755
 		}
 		if err = os.WriteFile(fm.Path(p), b, mode); err != nil {
 			log.Printf("error writing embedded file %s to %s: %s", p, fm.Path(p), err)
