@@ -11,12 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wireleap/common/api/apiversion"
 	"github.com/wireleap/common/api/auth"
 	"github.com/wireleap/common/api/canned"
+	"github.com/wireleap/common/api/interfaces"
 	"github.com/wireleap/common/api/status"
-
-	"github.com/blang/semver"
 )
 
 type Routes map[string]http.Handler
@@ -148,12 +146,12 @@ func AuthGate(targetMux http.Handler, components ...string) http.Handler {
 	})
 }
 
-func VersionGate(targetMux http.Handler, v *semver.Version) http.Handler {
+func VersionGate(targetMux http.Handler, it interfaces.T) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if len(auth.GetHeader(r.Header, auth.API, auth.Version)) > 0 {
+		if len(auth.GetHeader(r.Header, string(it.Consumer), auth.Version)) > 0 {
 			// only check version header if provided
 
-			err := auth.VersionCheck(r.Header, auth.API, &apiversion.VERSION)
+			err := auth.VersionCheck(r.Header, string(it.Consumer), &it.Version)
 
 			if err != nil {
 				status.ErrRequest.Wrap(fmt.Errorf(
@@ -163,7 +161,7 @@ func VersionGate(targetMux http.Handler, v *semver.Version) http.Handler {
 			}
 		}
 
-		auth.SetHeader(w.Header(), auth.API, auth.Version, v.String())
+		auth.SetHeader(w.Header(), auth.API, auth.Version, it.Version.String())
 		targetMux.ServeHTTP(w, r)
 	})
 }
