@@ -183,12 +183,10 @@ func NewMux(routes ...Routes) *http.ServeMux {
 func DefaultServer(addr string, mux http.Handler) *http.Server {
 	return &http.Server{
 		Addr: addr,
-		Handler: VersionGate(
-			LogRequestGate(
-				IdempotencyKeyGate(
-					mux,
-				),
-			), &apiversion.VERSION,
+		Handler: LogRequestGate(
+			IdempotencyKeyGate(
+				mux,
+			),
 		),
 		ReadHeaderTimeout: 30 * time.Second,
 		WriteTimeout:      30 * time.Second,
