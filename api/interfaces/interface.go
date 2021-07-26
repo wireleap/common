@@ -20,3 +20,5 @@ type T struct {
 	Provider Component      `json:"provider"`
 	Version  semver.Version `json:"version"`
 }
+
+func (t T) String() string { return string(t.Consumer) + "-" + string(t.Provider) }
