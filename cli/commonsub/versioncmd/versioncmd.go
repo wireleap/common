@@ -6,14 +6,28 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/blang/semver"
+	"github.com/wireleap/common/api/interfaces"
 	"github.com/wireleap/common/cli"
 	"github.com/wireleap/common/cli/fsdir"
 )
 
-func Cmd(vstring string) *cli.Subcmd {
+func Cmd(swversion *semver.Version, is ...interfaces.T) *cli.Subcmd {
+	out := swversion.String()
+	fs := flag.NewFlagSet("version", flag.ExitOnError)
+	verbose := fs.Bool("v", false, "show verbose output")
+
 	return &cli.Subcmd{
-		FlagSet: flag.NewFlagSet("version", flag.ExitOnError),
+		FlagSet: fs,
 		Desc:    "Show version and exit",
-		Run:     func(_ fsdir.T) { fmt.Println(vstring) },
+		Run: func(_ fsdir.T) {
+			if *verbose {
+				for _, i := range is {
+					out += "\n" + i.String() + " interface version " + i.Version.String()
+				}
+			}
+
+			fmt.Println(out)
+		},
 	}
 }
