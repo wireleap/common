@@ -146,22 +146,23 @@ func AuthGate(targetMux http.Handler, components ...string) http.Handler {
 	})
 }
 
-func VersionGate(targetMux http.Handler, it interfaces.T) http.Handler {
+func VersionGate(targetMux http.Handler, is ...interfaces.T) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if len(auth.GetHeader(r.Header, string(it.Consumer), auth.Version)) > 0 {
-			// only check version header if provided
+		for _, i := range is {
+			if len(auth.GetHeader(r.Header, string(i.Consumer), auth.Version)) > 0 {
+				// only check version header if provided
 
-			err := auth.VersionCheck(r.Header, string(it.Consumer), &it.Version)
+				err := auth.VersionCheck(r.Header, string(i.Consumer), &i.Version)
 
-			if err != nil {
-				status.ErrRequest.Wrap(fmt.Errorf(
-					"invalid client API version: %w", err,
-				)).WriteTo(w)
-				return
+				if err != nil {
+					status.ErrRequest.Wrap(fmt.Errorf(
+						"invalid client API version: %w", err,
+					)).WriteTo(w)
+					return
+				}
 			}
+			auth.SetHeader(w.Header(), auth.API, auth.Version, i.Version.String())
 		}
-
-		auth.SetHeader(w.Header(), auth.API, auth.Version, it.Version.String())
 		targetMux.ServeHTTP(w, r)
 	})
 }
