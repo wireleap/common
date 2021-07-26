@@ -57,7 +57,11 @@ func (sub *Subcmd) SetDefaultUsage() {
 		}
 		sub.VisitAll(func(f *flag.Flag) {
 			name, usage := flag.UnquoteUsage(f)
-			fmt.Fprintf(o, "  --%s %s\t%s\n", f.Name, name, usage)
+			dash := "--"
+			if len(f.Name) == 1 {
+				dash = "-"
+			}
+			fmt.Fprintf(o, "  %s%s %s\t%s\n", dash, f.Name, name, usage)
 		})
 		for _, s := range sub.Sections {
 			fmt.Fprintf(o, "\n%s:\n", s.Title)
