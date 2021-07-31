@@ -17,6 +17,7 @@ import (
 
 	"github.com/wireleap/common/api/apiversion"
 	"github.com/wireleap/common/api/auth"
+	"github.com/wireleap/common/api/interfaces"
 	"github.com/wireleap/common/api/nonce"
 	"github.com/wireleap/common/api/signer"
 	"github.com/wireleap/common/api/status"
@@ -28,20 +29,20 @@ import (
 type Client struct {
 	*http.Client
 	signer.Signer
-	component string
+	is []interfaces.T
 
 	do func(*http.Request) (*http.Response, error)
 }
 
 // New creates a new API client using the given signer to sign API requests.
-func New(s signer.Signer, component string) *Client {
-	return &Client{&http.Client{}, s, component, nil}
+func New(s signer.Signer, is ...interfaces.T) *Client {
+	return &Client{&http.Client{}, s, is, nil}
 }
 
 // NewMock creates a new API client which uses a given handler for handling all
 // requests.
-func NewMock(s signer.Signer, h http.Handler, component string) (c *Client) {
-	c = New(s, component)
+func NewMock(s signer.Signer, h http.Handler, is ...interfaces.T) (c *Client) {
+	c = New(s, is...)
 
 	c.do = func(r *http.Request) (*http.Response, error) {
 		rw := httptest.NewRecorder()
@@ -60,7 +61,7 @@ func (c *Client) Do(r *http.Request) (*http.Response, error) {
 	return c.Client.Do(r)
 }
 
-func (c *Client) SetComponent(s string)            { c.component = s }
+func (c *Client) SetInterfaces(is ...interfaces.T) { c.is = is }
 func (c *Client) SetTransport(t http.RoundTripper) { c.Client.Transport = t }
 
 // NewRequest is a convenience function for creating a new http.Request with a
@@ -93,8 +94,10 @@ func (c *Client) NewRequest(method string, url string, data interface{}) (*http.
 		pks := base64.RawURLEncoding.EncodeToString(c.Public())
 		sgs := base64.RawURLEncoding.EncodeToString(sig)
 
-		auth.SetHeader(req.Header, c.component, auth.Pubkey, pks)
-		auth.SetHeader(req.Header, c.component, auth.Signature, sgs)
+		for _, i := range c.is {
+			auth.SetHeader(req.Header, i.Consumer.String(), auth.Pubkey, pks)
+			auth.SetHeader(req.Header, i.Consumer.String(), auth.Signature, sgs)
+		}
 	}
 
 	return req, nil
