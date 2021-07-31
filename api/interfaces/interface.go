@@ -15,6 +15,8 @@ const (
 	PS                 = "ps"
 )
 
+func (c Component) String() string { return string(c) }
+
 type T struct {
 	Consumer Component      `json:"consumer"`
 	Provider Component      `json:"provider"`
