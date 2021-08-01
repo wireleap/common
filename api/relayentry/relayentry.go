@@ -10,14 +10,16 @@ import (
 	"github.com/wireleap/common/api/texturl"
 
 	"github.com/blang/semver"
+	"github.com/c2h5oh/datasize"
 )
 
 type T struct {
-	Role    string          `json:"role"`
-	Addr    *texturl.URL    `json:"address"`
-	Pubkey  jsonb.PK        `json:"pubkey"`
-	Version *semver.Version `json:"version"`
-	Key     string          `json:"key,omitempty"`
+	Role     string            `json:"role"`
+	Addr     *texturl.URL      `json:"address"`
+	Pubkey   jsonb.PK          `json:"pubkey"`
+	Version  *semver.Version   `json:"version"`
+	Key      string            `json:"key,omitempty"`
+	NetUsage datasize.ByteSize `json:"network_usage_limit,omitempty"`
 	// Update channel for the relay, used in determining the update version to
 	// push from the directory. Can be empty, in which case it's taken to be
 	// default.
