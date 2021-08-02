@@ -28,8 +28,8 @@ type T struct {
 	mu     sync.Mutex
 }
 
-// New creates a new T given an underlying net.Conn to fall back for non-r/w
-// methods and a remote URL string to connect to via h/2.
+// New creates a new T given a http.Roundtripper and a remote URL string to
+// connect to via h/2 as well as any headers that are needed.
 func New(t http.RoundTripper, remote string, headers map[string]string) (c *T, err error) {
 	c = &T{}
 
@@ -55,58 +55,65 @@ func New(t http.RoundTripper, remote string, headers map[string]string) (c *T, e
 
 	go func() {
 		res, err := t.RoundTrip(req)
+		c.mu.Lock()
+		defer c.mu.Unlock()
 		if err == nil {
 			c.ReadCloser = res.Body
 		}
 		c.e <- err
+		close(c.e)
 	}()
 
 	return
 }
 
-func (c *T) check() {
-	c.once.Do(func() {
-		c.er = <-c.e
-		close(c.e)
-		c.e = nil
-	})
+func (c *T) check() error {
+	if err, ok := <-c.e; ok {
+		if err == nil {
+			return nil
+		} else {
+			c.mu.Lock()
+			c.er = err
+			c.mu.Unlock()
+			return err
+		}
+	} else {
+		return c.er
+	}
 }
 
 // Write writes the given data to a pipe the other end of which is read as the
 // sent request body.
 func (c *T) Write(p []byte) (int, error) {
-	if c.er != nil {
-		return 0, c.er
-	}
 	return c.WriteCloser.Write(p)
 }
 
 // Read makes the initial request if needed, after which it reads from the
 // response body if no error was encountered.
 func (c *T) Read(p []byte) (int, error) {
-	c.check()
-	if c.er != nil {
-		return 0, c.er
+	if err := c.check(); err != nil {
+		return 0, err
 	}
 	return c.ReadCloser.Read(p)
 }
 
 func (c *T) SetDeadline(t time.Time) error {
 	c.mu.Lock()
+	defer c.mu.Unlock()
 	if c.dl != nil {
 		c.dl.Stop()
 	}
 	if t.IsZero() {
-		c.mu.Unlock()
 		return nil
 	}
 	c.dl = time.AfterFunc(time.Until(t), func() { c.Close() })
-	c.mu.Unlock()
 	return nil
 }
 
 // Close closes both the sent request body and the response body.
 func (c *T) Close() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.cancel()
 	if c.ReadCloser != nil {
 		c.ReadCloser.Close()
