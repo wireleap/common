@@ -149,10 +149,10 @@ func AuthGate(targetMux http.Handler, components ...string) http.Handler {
 func VersionGate(targetMux http.Handler, is ...interfaces.T) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		for _, i := range is {
-			if len(auth.GetHeader(r.Header, string(i.Consumer), auth.Version)) > 0 {
+			if len(auth.GetHeader(r.Header, i.String(), auth.Version)) > 0 {
 				// only check version header if provided
 
-				err := auth.VersionCheck(r.Header, string(i.Consumer), &i.Version)
+				err := auth.VersionCheck(r.Header, i.String(), &i.Version)
 
 				if err != nil {
 					status.ErrRequest.Wrap(fmt.Errorf(
