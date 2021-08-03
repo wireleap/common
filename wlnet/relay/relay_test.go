@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wireleap/common/api/interfaces/clientrelay"
 	"github.com/wireleap/common/api/servicekey"
 	"github.com/wireleap/common/api/sharetoken"
 	"github.com/wireleap/common/api/signer"
@@ -54,7 +55,7 @@ func TestWLRelay(t *testing.T) {
 		Protocol: "tcp",
 		Remote:   texturl.URLMustParse("target://localhost:8888"),
 		Token:    st,
-		Version:  &wlnet.PROTO_VERSION,
+		Version:  &clientrelay.T.Version,
 	}
 	p0 := []byte{'h', 'e', 'l', 'l', 'o', '!', '\r', '\n'}
 	c1, c2 := net.Pipe()
