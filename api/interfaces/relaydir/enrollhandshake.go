@@ -48,7 +48,7 @@ func EnrollHandshake(cl *client.Client, req *http.Request) (st *status.T, err er
 	}
 
 	auth.DelHeader(res.Header, auth.API, auth.Version) // ignore API version for this
-	err = client.ParseResponse(res, &jm)
+	err = cl.ParseResponse(res, &jm)
 
 	if err != nil {
 		err = fmt.Errorf(

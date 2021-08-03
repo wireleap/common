@@ -15,7 +15,6 @@ import (
 	"net/http/httptest"
 	"time"
 
-	"github.com/wireleap/common/api/apiversion"
 	"github.com/wireleap/common/api/auth"
 	"github.com/wireleap/common/api/interfaces"
 	"github.com/wireleap/common/api/nonce"
@@ -85,7 +84,6 @@ func (c *Client) NewRequest(method string, url string, data interface{}) (*http.
 		return nil, err
 	}
 
-	auth.SetHeader(req.Header, auth.API, auth.Version, apiversion.VERSION_STRING)
 	req.Header.Set("Content-Type", "application/json")
 
 	if c.Signer != nil {
@@ -95,6 +93,7 @@ func (c *Client) NewRequest(method string, url string, data interface{}) (*http.
 		sgs := base64.RawURLEncoding.EncodeToString(sig)
 
 		for _, i := range c.is {
+			auth.SetHeader(req.Header, i.String(), auth.Version, i.Version.String())
 			auth.SetHeader(req.Header, i.Consumer.String(), auth.Pubkey, pks)
 			auth.SetHeader(req.Header, i.Consumer.String(), auth.Signature, sgs)
 		}
@@ -127,7 +126,7 @@ func (c *Client) PerformRequestOnce(req *http.Request, out interface{}, cs ...st
 		return
 	}
 
-	return ParseResponse(res, out, cs...)
+	return c.ParseResponse(res, out, cs...)
 }
 
 // Perform is a convenience function for creating a new request, performing it
@@ -170,7 +169,7 @@ func (c *Client) Perform(method string, url string, in interface{}, out interfac
 // checks for API errors. It is not a method of the Client type since it uses
 // no Client-specific data. Therefore, while low-level, it can be called by
 // code which does not use Client if needed.
-func ParseResponse(res *http.Response, dst interface{}, cs ...string) (err error) {
+func (c *Client) ParseResponse(res *http.Response, dst interface{}, cs ...string) (err error) {
 	defer res.Body.Close()
 	var body []byte
 
@@ -187,16 +186,18 @@ func ParseResponse(res *http.Response, dst interface{}, cs ...string) (err error
 		)
 	}
 
-	// check API version if present
-	if len(auth.GetHeader(res.Header, auth.API, auth.Version)) > 0 {
-		err = auth.VersionCheck(res.Header, auth.API, &apiversion.VERSION)
+	for _, i := range c.is {
+		// check interface version if present
+		if len(auth.GetHeader(res.Header, i.String(), auth.Version)) > 0 {
+			err = auth.VersionCheck(res.Header, i.String(), &i.Version)
 
-		if err != nil {
-			return fmt.Errorf(
-				"invalid server API version: %w, request body: %s",
-				err,
-				string(body),
-			)
+			if err != nil {
+				return fmt.Errorf(
+					"invalid server API version: %w, request body: %s",
+					err,
+					string(body),
+				)
+			}
 		}
 	}
 

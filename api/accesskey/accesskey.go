@@ -10,6 +10,10 @@ import (
 	"github.com/blang/semver"
 )
 
+const VERSION_STRING = "0.3.3"
+
+var VERSION = semver.MustParse(VERSION_STRING)
+
 type T struct {
 	Version  *semver.Version `json:"version"`
 	Contract *Contract       `json:"contract,omitempty"`
