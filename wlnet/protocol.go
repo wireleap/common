@@ -10,6 +10,7 @@ import (
 	"io"
 	"net"
 
+	"github.com/wireleap/common/api/interfaces/clientrelay"
 	"github.com/wireleap/common/api/sharetoken"
 	"github.com/wireleap/common/api/status"
 	"github.com/wireleap/common/api/texturl"
@@ -81,10 +82,8 @@ func (i *Init) sanityCheck() error {
 		return fmt.Errorf("unknown command in payload: %s", i.Command)
 	}
 
-	err := VersionCheck(i.Version)
-
-	if err != nil {
-		return err
+	if clientrelay.T.Version.Minor != i.Version.Minor {
+		return fmt.Errorf("expecting version 0.%d.x, got %s", clientrelay.T.Version.Minor, i.Version)
 	}
 
 	return nil
