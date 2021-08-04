@@ -3,6 +3,7 @@
 package wlnet
 
 import (
+	"context"
 	"errors"
 	"io"
 	"log"
@@ -20,10 +21,11 @@ func retransmit(src io.Reader, dst io.Writer, ec chan error, bufsize int) {
 	ec <- err
 }
 
-// splice(src, dst, maxtime, bufsize) splices src and dst together end-to-end
-// by performing a retransmit() in both directions with buffer size bufsize. If
-// maxtime is not zero, connections are limited to this time-to-live.
-func Splice(src, dst io.ReadWriteCloser, maxtime time.Duration, bufsize int) (err error) {
+// splice(ctx, src, dst, maxtime, bufsize) splices src and dst together
+// end-to-end by performing a retransmit() in both directions with buffer size
+// bufsize. If maxtime is not zero, connections are limited to this
+// time-to-live. Can be cancelled through ctx.
+func Splice(ctx context.Context, src, dst io.ReadWriteCloser, maxtime time.Duration, bufsize int) (err error) {
 	if maxtime != time.Second*0 {
 		dl := time.Now().Add(maxtime)
 
@@ -45,9 +47,18 @@ func Splice(src, dst io.ReadWriteCloser, maxtime time.Duration, bufsize int) (er
 	go retransmit(src, dst, ec, bufsize)
 	go retransmit(dst, src, ec, bufsize)
 
-	st := &status.T{}
-	if err = <-ec; err != nil && errors.As(err, &st) {
-		log.Printf("splice error: %s", err)
+	cancelled := false
+	select {
+	// Regular flow
+	case err = <-ec:
+		st := &status.T{}
+		if err != nil && errors.As(err, &st) {
+			log.Printf("splice error: %s", err)
+		}
+	// Cancel flow
+	case <- ctx.Done():
+		err = nil
+		cancelled = true
 	}
 
 	// interrupt the connection on errors or EOFs from either side
@@ -57,5 +68,9 @@ func Splice(src, dst io.ReadWriteCloser, maxtime time.Duration, bufsize int) (er
 
 	// wait for stream termination
 	<-ec
+	if cancelled {
+		<-ec
+	}
+
 	return
 }

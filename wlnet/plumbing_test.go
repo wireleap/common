@@ -3,6 +3,7 @@
 package wlnet
 
 import (
+	"context"
 	"bytes"
 	"net"
 	"testing"
@@ -30,8 +31,9 @@ func TestRetransmit(t *testing.T) {
 
 func TestSplice(t *testing.T) {
 	c1, c2 := net.Pipe()
+	ctx := context.Background()
 
-	go Splice(c1, c2, time.Second*0, bufsize)
+	go Splice(ctx, c1, c2, time.Second*0, bufsize)
 
 	_, err := c1.Write(test)
 
