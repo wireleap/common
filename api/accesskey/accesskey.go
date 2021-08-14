@@ -10,7 +10,7 @@ import (
 	"github.com/blang/semver"
 )
 
-const VERSION_STRING = "0.3.3"
+const VERSION_STRING = "0.1.0"
 
 var VERSION = semver.MustParse(VERSION_STRING)
 
