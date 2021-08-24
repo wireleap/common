@@ -161,7 +161,7 @@ func VersionGate(targetMux http.Handler, is ...interfaces.T) http.Handler {
 					return
 				}
 			}
-			auth.SetHeader(w.Header(), auth.API, auth.Version, i.Version.String())
+			auth.SetHeader(w.Header(), i.String(), auth.Version, i.Version.String())
 		}
 		targetMux.ServeHTTP(w, r)
 	})
