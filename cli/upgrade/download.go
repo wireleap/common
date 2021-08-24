@@ -11,7 +11,7 @@ import (
 
 const (
 	releaseURL   = "https://github.com/wireleap/%s/releases/download/v%s/%s_%s-amd64%s"
-	changelogURL = "https://github.com/wireleap/%s/blob/master/changelogs/%s.md"
+	changelogURL = "https://raw.githubusercontent.com/wireleap/%s/master/changelogs/%s.md"
 )
 
 func repoName(component string) string {
