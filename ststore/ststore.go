@@ -47,14 +47,14 @@ func New(dir string, keyf KeyFunc) (t *T, err error) {
 		switch {
 		case err != nil:
 			return err
-		case strings.Count(path, "/") != 2:
-			return nil
-		case !strings.HasSuffix(path, ".json"):
+		case !strings.HasSuffix(info.Name(), ".json"):
 			return nil
 		}
 
 		st := &sharetoken.T{}
-		err = t.m.Get(st, strings.Split(path, "/")[1:]...)
+		ps := strings.Split(path, "/")
+		n := len(ps)
+		err = t.m.Get(st, ps[n-2:n]...)
 
 		if err != nil {
 			return err
