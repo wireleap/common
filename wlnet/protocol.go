@@ -25,10 +25,10 @@ const MAGIC uint8 = 42
 // tunneled connection ("init payload").
 type Init struct {
 	Command  string          `json:"command"`
-	Protocol string          `json:"protocol"`
-	Remote   *texturl.URL    `json:"remote"`
-	Token    *sharetoken.T   `json:"token"`
-	Version  *semver.Version `json:"version"`
+	Protocol string          `json:"protocol,omitempty"`
+	Remote   *texturl.URL    `json:"remote,omitempty"`
+	Token    *sharetoken.T   `json:"token,omitempty"`
+	Version  *semver.Version `json:"version,omitempty"`
 }
 
 // WriteTo serializes the init payload to some io.Writer.
