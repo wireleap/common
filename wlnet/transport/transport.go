@@ -10,11 +10,12 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/wireleap/common/wlnet"
 	"github.com/wireleap/common/wlnet/h2conn"
 )
 
 // T is a complete Wireleap network transport which can dial to other
-// wireleap-relays via TLS or H/2 over TCP and targets via TCP or UDP.
+// wireleap-relays via H/2 over TCP and targets via TCP or UDP.
 type T struct{ *http.Transport }
 
 // Options is a struct which contains options for initializing a T.
@@ -58,15 +59,24 @@ func New(opts Options) *T {
 }
 
 // DialWL creates a new connection to relay or target.
-func (t *T) DialWL(protocol string, remote *url.URL) (c net.Conn, err error) {
+func (t *T) DialWL(c0 net.Conn, protocol string, remote *url.URL, payload *wlnet.Init) (c net.Conn, err error) {
 	switch remote.Scheme {
 	case "target":
+		// c0/payload unused, could both be nil
 		c, err = t.Transport.Dial(protocol, remote.Host)
 	case "wireleap":
+		tt := t.Transport
+		if c0 != nil {
+			// if previous connection supplied, use it to tunnel
+			t2 := t.Transport.Clone()
+			t2.DialTLS = func(_ string, _ string) (net.Conn, error) { return c0, nil }
+			tt = t2
+		}
 		// convert to a stdlib-known scheme
 		u2 := *remote
 		u2.Scheme = "https"
-		c, err = h2conn.New(t.Transport, u2.String(), nil)
+		// payload used for headers
+		c, err = h2conn.New(tt, u2.String(), payload.Headers())
 	default:
 		err = fmt.Errorf("unsupported dial scheme '%s' in %s", remote.Scheme, remote)
 	}
