@@ -8,7 +8,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
+	"net/http"
 
 	"github.com/wireleap/common/api/interfaces/clientrelay"
 	"github.com/wireleap/common/api/sharetoken"
@@ -29,6 +31,24 @@ type Init struct {
 	Remote   *texturl.URL    `json:"remote,omitempty"`
 	Token    *sharetoken.T   `json:"token,omitempty"`
 	Version  *semver.Version `json:"version,omitempty"`
+}
+
+func (i *Init) Headers() map[string]string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		log.Printf("error when marshaling payload %+v: %s", i, err)
+		return map[string]string{}
+	}
+
+	return map[string]string{"wl-payload": string(b)}
+}
+
+func InitFromHeaders(h http.Header) (i *Init, err error) {
+	i = &Init{}
+	if err = json.Unmarshal([]byte(h.Get("wl-payload")), &i); err != nil {
+		return nil, fmt.Errorf("could not parse payload header: %w", err)
+	}
+	return
 }
 
 // WriteTo serializes the init payload to some io.Writer.
