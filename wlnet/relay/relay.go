@@ -57,14 +57,24 @@ func isLoopback(addr string) bool {
 	return ip.IsLoopback() || ip.IsUnspecified()
 }
 
-// ServeTLS is the handler function for listening and relaying incoming data.
+// ServeHTTP is the handler function for H2. It being named ServeHTTP allows
+// T to expose the http.Handler interface.
 // It handles the initial init payload and brokers the subsequent tunnel
 // connections or an exit connection if needed.
-func (t *T) ServeTLS(c io.ReadWriteCloser) {
+func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		status.ErrMethod.WriteTo(w)
+		return
+	}
+
+	var c io.ReadWriteCloser = h2rwc.T{
+		Writer:     flushwriter.T{Writer: w},
+		ReadCloser: r.Body,
+	}
 	defer c.Close()
 
 	origin := t.ErrorOrigin
-	p, err := wlnet.ReadInit(c)
+	p, err := wlnet.InitFromHeaders(r.Header)
 
 	if err != nil {
 		wlnet.WriteStatus(c, &status.T{
@@ -126,7 +136,7 @@ func (t *T) ServeTLS(c io.ReadWriteCloser) {
 	}
 
 	log.Printf("Dialing %s connection to %s", p.Protocol, shown)
-	c2, err := t.DialWL(p.Protocol, &p.Remote.URL)
+	c2, err := t.T.Transport.Dial(p.Protocol, p.Remote.Host)
 
 	if err != nil {
 		// TODO more granular errors
@@ -171,17 +181,6 @@ func (t *T) ServeTLS(c io.ReadWriteCloser) {
 			})
 		}
 	}
-}
-
-// ServeHTTP is the handler function for H2. It being named ServeHTTP allows
-// T to expose the http.Handler interface.
-func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
-		status.ErrMethod.WriteTo(w)
-		return
-	}
-	// TODO process the h/2 connection in a more seamless way
-	t.ServeTLS(h2rwc.T{Writer: flushwriter.T{Writer: w}, ReadCloser: r.Body})
 }
 
 // ListenAndServeHTTP listens on the specified address and passes the
