@@ -69,7 +69,9 @@ func (t *T) DialWL(c0 net.Conn, protocol string, remote *url.URL, payload *wlnet
 		if c0 != nil {
 			// if previous connection supplied, use it to tunnel
 			t2 := t.Transport.Clone()
-			t2.DialTLS = func(_ string, _ string) (net.Conn, error) { return c0, nil }
+			t2.DialTLS = func(_ string, _ string) (net.Conn, error) {
+				return tls.Client(c0, t.Transport.TLSClientConfig), nil
+			}
 			tt = t2
 		}
 		// convert to a stdlib-known scheme
