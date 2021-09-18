@@ -173,3 +173,5 @@ func (t *T) WriteTo(w io.Writer) (int, error) {
 
 	return w.Write(b)
 }
+
+func (t *T) ToHeader(h http.Header) { h.Set("wl-status", t.Error()) }
