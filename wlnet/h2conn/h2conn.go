@@ -6,11 +6,15 @@ package h2conn
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/wireleap/common/api/status"
 )
 
 // T is the type of h/2 overlay connections.
@@ -22,6 +26,7 @@ type T struct {
 	e  chan error
 	er error
 
+	resp   *http.Response
 	once   sync.Once
 	cancel context.CancelFunc
 	dl     *time.Timer
@@ -58,6 +63,7 @@ func New(t http.RoundTripper, remote string, headers map[string]string) (c *T, e
 		c.mu.Lock()
 		defer c.mu.Unlock()
 		if err == nil {
+			c.resp = res
 			c.ReadCloser = res.Body
 		}
 		c.e <- err
@@ -94,7 +100,21 @@ func (c *T) Read(p []byte) (int, error) {
 	if err := c.check(); err != nil {
 		return 0, err
 	}
-	return c.ReadCloser.Read(p)
+	n, err := c.ReadCloser.Read(p)
+	if err != nil && c.resp != nil && c.resp.Trailer != nil {
+		sth := c.resp.Trailer.Get("wl-status")
+		if sth != "" {
+			var st status.T
+			if err = json.Unmarshal([]byte(sth), &st); err != nil {
+				return 0, fmt.Errorf("error while unmarshaling status trailer: %w", err)
+			}
+			if st.Is(status.OK) {
+				return n, nil
+			}
+			return n, &st
+		}
+	}
+	return n, err
 }
 
 func (c *T) SetDeadline(t time.Time) error {
