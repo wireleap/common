@@ -67,6 +67,9 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h := w.Header()
+	h.Set("Trailer", "wl-status")
+
 	var c io.ReadWriteCloser = h2rwc.T{
 		Writer:     flushwriter.T{Writer: w},
 		ReadCloser: r.Body,
@@ -77,11 +80,11 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p, err := wlnet.InitFromHeaders(r.Header)
 
 	if err != nil {
-		wlnet.WriteStatus(c, &status.T{
+		(&status.T{
 			Code:   http.StatusBadRequest,
 			Desc:   err.Error(),
 			Origin: origin,
-		})
+		}).ToHeader(h)
 		return
 	}
 
@@ -99,12 +102,11 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err = t.HandleST(p.Token)
 
 		if err != nil {
-			wlnet.WriteStatus(c, &status.T{
+			(&status.T{
 				Code:   http.StatusBadRequest,
 				Desc:   err.Error(),
 				Origin: origin,
-			})
-
+			}).ToHeader(h)
 			return
 		}
 	}
@@ -116,14 +118,14 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// no dials to localhost (this relay's host)
 	if !t.AllowLoopback && isLoopback(p.Remote.Hostname()) {
-		wlnet.WriteStatus(c, &status.T{
+		(&status.T{
 			Code: http.StatusBadRequest,
 			Desc: fmt.Sprintf(
 				"loopback address '%s' requested, refusing to dial",
 				p.Remote.Hostname(),
 			),
 			Origin: origin,
-		})
+		}).ToHeader(h)
 		return
 	}
 
@@ -142,24 +144,20 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// TODO more granular errors
 
 		if os.IsTimeout(err) {
-			wlnet.WriteStatus(c, &status.T{
+			(&status.T{
 				Code:   http.StatusRequestTimeout,
 				Desc:   err.Error(),
 				Origin: origin,
-			})
+			}).ToHeader(h)
 		} else {
-			wlnet.WriteStatus(c, &status.T{
+			(&status.T{
 				Code:   http.StatusBadGateway,
 				Desc:   err.Error(),
 				Origin: origin,
-			})
+			}).ToHeader(h)
 		}
 
 		return
-	}
-
-	if p.Remote.Scheme == "target" {
-		c = wlnet.FragWriteCloser{ReadWriteCloser: c}
 	}
 
 	err = wlnet.Splice(c, c2, t.MaxTime, t.BufSize)
@@ -168,17 +166,17 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// TODO more granular errors
 
 		if os.IsTimeout(err) {
-			wlnet.WriteStatus(c, &status.T{
+			(&status.T{
 				Code:   http.StatusRequestTimeout,
 				Desc:   err.Error(),
 				Origin: origin,
-			})
+			}).ToHeader(h)
 		} else {
-			wlnet.WriteStatus(c, &status.T{
+			(&status.T{
 				Code:   http.StatusGone,
 				Desc:   err.Error(),
 				Origin: origin,
-			})
+			}).ToHeader(h)
 		}
 	}
 }
