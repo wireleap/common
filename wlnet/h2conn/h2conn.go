@@ -102,7 +102,7 @@ func (c *T) Read(p []byte) (int, error) {
 	}
 	n, err := c.ReadCloser.Read(p)
 	if err != nil && c.resp != nil && c.resp.Trailer != nil {
-		sth := c.resp.Trailer.Get("wl-status")
+		sth := c.resp.Trailer.Get(status.Header)
 		if sth != "" {
 			var st status.T
 			if err = json.Unmarshal([]byte(sth), &st); err != nil {
