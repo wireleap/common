@@ -17,6 +17,8 @@ import (
 	"github.com/blang/semver"
 )
 
+const PayloadHeader = "wl-payload"
+
 // Init is the struct type encoding values passed while initializing the
 // tunneled connection ("init payload").
 type Init struct {
@@ -34,12 +36,12 @@ func (i *Init) Headers() map[string]string {
 		return map[string]string{}
 	}
 
-	return map[string]string{"wl-payload": string(b)}
+	return map[string]string{PayloadHeader: string(b)}
 }
 
 func InitFromHeaders(h http.Header) (i *Init, err error) {
 	i = &Init{}
-	if err = json.Unmarshal([]byte(h.Get("wl-payload")), &i); err != nil {
+	if err = json.Unmarshal([]byte(h.Get(PayloadHeader)), &i); err != nil {
 		return nil, fmt.Errorf("could not parse payload header: %w", err)
 	}
 	return
