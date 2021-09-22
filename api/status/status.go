@@ -174,4 +174,15 @@ func (t *T) WriteTo(w io.Writer) (int, error) {
 	return w.Write(b)
 }
 
-func (t *T) ToHeader(h http.Header) { h.Set("wl-status", t.Error()) }
+const Header = "wl-status"
+
+func (t *T) ToHeader(h http.Header) { h.Set(Header, t.Error()) }
+
+func FromHeader(h http.Header) (*T, error) {
+	s := h.Get(Header)
+	r := &T{}
+	if err := json.Unmarshal([]byte(s), &r); err != nil {
+		return nil, err
+	}
+	return r, nil
+}
