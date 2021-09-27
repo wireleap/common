@@ -13,15 +13,23 @@ import (
 )
 
 type T struct {
-	Role    string          `json:"role"`
-	Addr    *texturl.URL    `json:"address"`
-	Pubkey  jsonb.PK        `json:"pubkey"`
-	Version *semver.Version `json:"version"`
-	Key     string          `json:"key,omitempty"`
+	Role     string       `json:"role"`
+	Addr     *texturl.URL `json:"address"`
+	Pubkey   jsonb.PK     `json:"pubkey"`
+	Versions Versions     `json:"versions,omitempty"`
+	Key      string       `json:"key,omitempty"`
 	// Update channel for the relay, used in determining the update version to
 	// push from the directory. Can be empty, in which case it's taken to be
 	// default.
 	Channel string `json:"update_channel,omitempty"`
+}
+
+type Versions struct {
+	Software      *semver.Version `json:"software"`
+	ClientRelay   *semver.Version `json:"client-relay"`
+	RelayRelay    *semver.Version `json:"relay-relay"`
+	RelayDir      *semver.Version `json:"relay-dir"`
+	RelayContract *semver.Version `json:"relay-contract"`
 }
 
 func (r *T) String() string {
