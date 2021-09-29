@@ -11,12 +11,14 @@ import (
 )
 
 type T struct {
-	PublicKey  jsonb.PK                  `json:"public_key"`
-	Version    string                    `json:"version"`
-	Endpoint   *texturl.URL              `json:"endpoint"`
-	Info       *texturl.URL              `json:"info,omitempty"`
-	Enrollment Enrollment                `json:"enrollment"`
-	Channels   map[string]semver.Version `json:"update_channels,omitempty"`
+	PublicKey  jsonb.PK     `json:"public_key"`
+	Version    string       `json:"version"`
+	Endpoint   *texturl.URL `json:"endpoint"`
+	Info       *texturl.URL `json:"info,omitempty"`
+	Enrollment Enrollment   `json:"enrollment"`
+	// NOTE: update_channels is deprecated
+	Channels        map[string]semver.Version            `json:"update_channels,omitempty"`
+	UpgradeChannels map[string]map[string]semver.Version `json:"upgrade_channels,omitempty"`
 }
 
 type Enrollment struct {
