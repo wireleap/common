@@ -17,8 +17,15 @@ type T struct {
 	Info       *texturl.URL `json:"info,omitempty"`
 	Enrollment Enrollment   `json:"enrollment"`
 	// NOTE: update_channels is deprecated
-	Channels        map[string]semver.Version            `json:"update_channels,omitempty"`
-	UpgradeChannels map[string]map[string]semver.Version `json:"upgrade_channels,omitempty"`
+	Channels        ChannelMap      `json:"update_channels,omitempty"`
+	UpgradeChannels UpgradeChannels `json:"upgrade_channels,omitempty"`
+}
+
+type ChannelMap map[string]semver.Version
+
+type UpgradeChannels struct {
+	Relay  ChannelMap `json:"relay,omitempty"`
+	Client ChannelMap `json:"client,omitempty"`
 }
 
 type Enrollment struct {
