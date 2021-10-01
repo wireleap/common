@@ -18,6 +18,11 @@ type T struct {
 	Pubkey   jsonb.PK     `json:"pubkey"`
 	Versions Versions     `json:"versions,omitempty"`
 	Key      string       `json:"key,omitempty"`
+	// Update channel for the relay, used in determining the update version to
+	// Upgrade channel for the relay, used in determining the upgrade version to
+	// push from the directory. Can be empty, in which case it's taken to be
+	// default. (DEPRECATED)
+	Channel string `json:"update_channel,omitempty"`
 	// Upgrade channel for the relay, used in determining the upgrade version to
 	// push from the directory. Can be empty, in which case it's taken to be
 	// "default".
@@ -70,6 +75,11 @@ func (r *T) Validate() error {
 		// OK
 	default:
 		return fmt.Errorf("invalid relay URL scheme: %s", r.Addr.Scheme)
+	}
+
+	// NOTE: update_channel is deprecated
+	if r.Channel == "" {
+		r.Channel = "default"
 	}
 
 	if r.UpgradeChannel == "" {
