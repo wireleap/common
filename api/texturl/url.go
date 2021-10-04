@@ -11,7 +11,7 @@ import (
 type URL struct{ url.URL }
 
 func (u *URL) UnmarshalText(b []byte) error { return u.UnmarshalBinary(b) }
-func (u *URL) MarshalText() ([]byte, error) { return u.MarshalBinary() }
+func (u URL) MarshalText() ([]byte, error)  { return u.MarshalBinary() }
 
 func URLMustParse(rawurl string) *URL {
 	u, err := url.Parse(rawurl)
