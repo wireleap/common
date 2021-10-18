@@ -9,7 +9,7 @@ import (
 
 // The version of this interface is declared here.
 
-const VERSION_STRING = "0.1.0"
+const VERSION_STRING = "0.2.0"
 
 var VERSION = semver.MustParse(VERSION_STRING)
 
