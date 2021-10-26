@@ -106,9 +106,14 @@ func (u *Config) Download(out, url, distuser, distpass string) error {
 	}
 	var r io.Reader
 	if u.interactive {
-		r = io.TeeReader(res.Body, &WriteCounter{out, 0, res.ContentLength})
+		r = io.TeeReader(res.Body, &WriteCounter{
+			url:   url,
+			name:  out,
+			n:     0,
+			total: res.ContentLength,
+		})
 	} else {
-		fmt.Printf("Downloading %s...\n", out)
+		fmt.Printf("Downloading %s to %s...\n", url, out)
 		r = res.Body
 	}
 	if _, err = io.Copy(f, r); err != nil {
