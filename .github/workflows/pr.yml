@@ -1,0 +1,19 @@
+name: PR test
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+jobs:
+  build:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    if: github.repository == 'wireleap/common' && contains(github.event.pull_request.labels.*.name, 'testable')
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Run unit tests
+      run: go test ./...
