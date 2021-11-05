@@ -25,12 +25,20 @@ func TestValidate(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	vs := Versions{
+		Software:      &v,
+		ClientRelay:   &v,
+		RelayRelay:    &v,
+		RelayDir:      &v,
+		RelayContract: &v,
+	}
+
 	// Should pass
 	r := T{
-		Role:    "fronting",
-		Addr:    texturl.URLMustParse("wireleap://wireleap.com"),
-		Pubkey:  jsonb.PK(pk),
-		Version: &v,
+		Role:     "fronting",
+		Addr:     texturl.URLMustParse("wireleap://wireleap.com"),
+		Pubkey:   jsonb.PK(pk),
+		Versions: vs,
 	}
 
 	if err = r.Validate(); err != nil {
@@ -39,10 +47,10 @@ func TestValidate(t *testing.T) {
 
 	// Should fail with invalid URL scheme
 	r = T{
-		Role:    "fronting",
-		Addr:    texturl.URLMustParse("gopher://foo.bar"),
-		Pubkey:  jsonb.PK(pk),
-		Version: &v,
+		Role:     "fronting",
+		Addr:     texturl.URLMustParse("gopher://foo.bar"),
+		Pubkey:   jsonb.PK(pk),
+		Versions: vs,
 	}
 
 	if err = r.Validate(); err == nil {
@@ -51,10 +59,10 @@ func TestValidate(t *testing.T) {
 
 	// Should fail with invalid relay role
 	r = T{
-		Role:    "foobar",
-		Addr:    texturl.URLMustParse("wireleap://wireleap.com"),
-		Pubkey:  jsonb.PK(pk),
-		Version: &v,
+		Role:     "foobar",
+		Addr:     texturl.URLMustParse("wireleap://wireleap.com"),
+		Pubkey:   jsonb.PK(pk),
+		Versions: vs,
 	}
 
 	if err = r.Validate(); err == nil {

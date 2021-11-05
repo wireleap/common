@@ -24,7 +24,7 @@ func TestWLTransport(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			c, err := tt.DialWL("tcp", u)
+			c, err := tt.DialWL(nil, "tcp", u, nil)
 			if err != nil {
 				if scheme == "invalid" {
 					return

@@ -5,7 +5,10 @@ package relay
 import (
 	"bytes"
 	"crypto/ed25519"
+	"io"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -58,24 +61,28 @@ func TestWLRelay(t *testing.T) {
 		Version:  &clientrelay.T.Version,
 	}
 	p0 := []byte{'h', 'e', 'l', 'l', 'o', '!', '\r', '\n'}
-	c1, c2 := net.Pipe()
+	pr, pw := io.Pipe()
+
+	r := httptest.NewRequest(http.MethodPut, "/", bytes.NewReader(p0))
+	for k, v := range init.Headers() {
+		r.Header.Set(k, v)
+	}
+	r.Body = io.NopCloser(pr)
+	rw := httptest.NewRecorder()
+
 	// emulate relay
-	go rl.ServeTLS(c2)
+	go rl.ServeHTTP(rw, r)
 	// emulate target
 	l, err := net.Listen("tcp", "localhost:8888")
 	if err != nil {
 		t.Fatal(err)
 	}
 	// emulate client
-	err = init.WriteTo(c1)
-	if err != nil {
-		t.Fatal(err)
-	}
 	con, err := l.Accept()
 	if err != nil {
 		t.Fatal(err)
 	}
-	n, err := c1.Write(p0)
+	n, err := pw.Write(p0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,9 +105,9 @@ func TestWLRelay(t *testing.T) {
 		t.Fatal(err)
 	}
 	con.Close()
-	c1 = &wlnet.FragReadConn{Conn: c1}
+	time.Sleep(500 * time.Millisecond)
 	p2 := make([]byte, 32)
-	n, err = c1.Read(p2)
+	n, err = rw.Result().Body.Read(p2)
 	if err != nil {
 		t.Fatal(err)
 	}
