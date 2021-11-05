@@ -1,0 +1,21 @@
+name: Master/tag update
+
+on:
+  push:
+    branches: 
+      - master
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    if: github.repository == 'wireleap/common'
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Run unit tests
+      run: go test ./...
