@@ -18,4 +18,4 @@ jobs:
       with:
         fetch-depth: 0
     - name: Run unit tests
-      run: go test ./...
+      run: ./contrib/docker/run-tests.sh
