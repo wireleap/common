@@ -70,6 +70,10 @@ func (r *T) Validate() error {
 		return fmt.Errorf("invalid relay role: %s", r.Role)
 	}
 
+	if r.Addr == nil {
+		return fmt.Errorf("relay entry address is null")
+	}
+
 	switch r.Addr.Scheme {
 	case "wireleap", "https":
 		// OK
