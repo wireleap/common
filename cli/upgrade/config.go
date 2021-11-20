@@ -13,7 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -84,7 +84,7 @@ func (u *Config) Download(out, url, distuser, distpass string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(path.Dir(out), 0700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(out), 0700); err != nil {
 		return err
 	}
 	f, err := os.Create(out)

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 )
 
@@ -66,14 +65,14 @@ func (t T) Path(ps ...string) string {
 		return string(t)
 	}
 
-	return path.Join(append([]string{string(t)}, ps...)...)
+	return filepath.Join(append([]string{string(t)}, ps...)...)
 }
 
 // Get reads the file under the path ps and unmarshals its JSON contents into
 // x.
 func (t T) Get(x interface{}, ps ...string) error {
 	p := t.Path(ps...)
-	err := mkdir(path.Dir(p))
+	err := mkdir(filepath.Dir(p))
 
 	if err != nil {
 		return err
@@ -97,7 +96,7 @@ func (t T) Get(x interface{}, ps ...string) error {
 // Set marshals the x value into JSON and writes it to the the path ps.
 func (t T) Set(x interface{}, ps ...string) error {
 	p := t.Path(ps...)
-	err := mkdir(path.Dir(p))
+	err := mkdir(filepath.Dir(p))
 
 	if err != nil {
 		return err
