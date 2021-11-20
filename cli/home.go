@@ -5,7 +5,6 @@ package cli
 import (
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/wireleap/common/cli/fsdir"
@@ -25,7 +24,7 @@ func Home() fsdir.T {
 		log.Fatal(err)
 	}
 
-	fm, err := fsdir.New(path.Dir(fp))
+	fm, err := fsdir.New(filepath.Dir(fp))
 
 	if err != nil {
 		log.Fatal(err)

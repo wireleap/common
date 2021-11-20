@@ -7,7 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/wireleap/common/cli/fsdir"
 )
@@ -40,11 +40,11 @@ func UnpackEmbedded(f embed.FS, fm fsdir.T, force bool) error {
 			return err
 		}
 		mode := fs.FileMode(0644)
-		if ok, err := path.Match("scripts/default/*", p); err == nil && ok && path.Base(p) != "README" {
+		if ok, err := filepath.Match("scripts/default/*", p); err == nil && ok && filepath.Base(p) != "README" {
 			// +x
 			mode = 0755
 		}
-		if path.Base(p) == "wireleap_tun" {
+		if filepath.Base(p) == "wireleap_tun" {
 			// +x
 			mode = 0755
 		}

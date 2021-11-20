@@ -6,7 +6,7 @@ import (
 	"crypto/ed25519"
 	"crypto/tls"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -24,8 +24,8 @@ func TestGenerate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cert := path.Join("testdata", "cert.pem")
-	key := path.Join("testdata", "key.pem")
+	cert := filepath.Join("testdata", "cert.pem")
+	key := filepath.Join("testdata", "key.pem")
 
 	err = Generate(cert, key, pk)
 
