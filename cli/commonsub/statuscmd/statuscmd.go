@@ -7,11 +7,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"syscall"
 	"text/tabwriter"
 
 	"github.com/wireleap/common/cli"
 	"github.com/wireleap/common/cli/fsdir"
+	"github.com/wireleap/common/cli/process"
 )
 
 func Cmd(arg0 string) *cli.Subcmd {
@@ -51,8 +51,7 @@ func Cmd(arg0 string) *cli.Subcmd {
 					text, status = fmt.Sprintf("could not read %s status", arg0), 2
 				}
 			} else {
-				if err = syscall.Kill(pid, 0); err == nil || os.IsPermission(err) {
-					// we can only get a permission error if the process is actually alive
+				if process.Exists(pid) {
 					text, status = fmt.Sprintf(
 						"%s is running, pid %d",
 						arg0,

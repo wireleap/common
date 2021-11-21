@@ -1,3 +1,4 @@
+// +build linux darwin
 // Copyright (c) 2021 Wireleap
 
 package reloadcmd

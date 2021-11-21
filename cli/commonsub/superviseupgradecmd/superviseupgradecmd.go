@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"syscall"
 
 	"github.com/blang/semver"
 	"github.com/wireleap/common/cli"
 	"github.com/wireleap/common/cli/commonsub/commonlib"
 	"github.com/wireleap/common/cli/fsdir"
+	"github.com/wireleap/common/cli/process"
 	"github.com/wireleap/common/cli/upgrade"
 )
 
@@ -74,7 +74,7 @@ func Cmd(ctx commonlib.Context) *cli.Subcmd {
 			// stop the old binary if running
 			log.Printf("stopping old %s if running...", ctx.BinName)
 			var pid int
-			if err = f.Get(&pid, pidfile); err == nil && syscall.Kill(pid, 0) == nil {
+			if err = f.Get(&pid, pidfile); err == nil && process.Exists(pid) {
 				log.Printf("found old %s, pid %d", ctx.BinName, pid)
 				if err = cli.RunChild(curbin, "stop"); err != nil {
 					psh(fmt.Errorf("stopping old binary returned error %s", err))

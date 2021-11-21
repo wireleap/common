@@ -9,12 +9,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"syscall"
 	"text/tabwriter"
 	"time"
 
 	"github.com/wireleap/common/cli"
 	"github.com/wireleap/common/cli/fsdir"
+	"github.com/wireleap/common/cli/process"
 )
 
 func Cmd(arg0 string, do func(fsdir.T)) *cli.Subcmd {
@@ -30,7 +30,7 @@ func Cmd(arg0 string, do func(fsdir.T)) *cli.Subcmd {
 			if *fg == false {
 				var pid int
 				if err = fm.Get(&pid, arg0+".pid"); err == nil {
-					if err = syscall.Kill(pid, 0); err == nil {
+					if process.Exists(pid) {
 						log.Fatalf("%s daemon is already running!", arg0)
 					}
 				}
