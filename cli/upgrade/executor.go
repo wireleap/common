@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"syscall"
 
 	"github.com/blang/semver"
 	"github.com/wireleap/common/cli/fsdir"
+	"github.com/wireleap/common/cli/process"
 )
 
 func run(args ...string) (err error) {
@@ -40,7 +40,7 @@ func ExecutorSimple(ea ExecutorArgs) (err error) {
 		pidfile = ea.SrcBin + ".pid"
 		oldbin  = ea.DstBin + ".prev"
 	)
-	if err = ea.Root.Get(&pid, pidfile); err == nil && syscall.Kill(pid, 0) == nil {
+	if err = ea.Root.Get(&pid, pidfile); err == nil && process.Exists(pid) {
 		log.Printf("found old %s, pid %d", ea.DstBin, pid)
 		if err = run(ea.SrcBin, "stop"); err != nil {
 			err = fmt.Errorf("stopping old binary returned error: %s", err)
