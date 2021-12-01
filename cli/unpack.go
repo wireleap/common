@@ -8,9 +8,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 
 	"github.com/wireleap/common/cli/fsdir"
 )
+
+var osSuffix = "_" + runtime.GOOS
 
 // Unpack go v1.16 embedded FS contents to disk.
 func UnpackEmbedded(f embed.FS, fm fsdir.T, force bool) error {
@@ -19,6 +23,8 @@ func UnpackEmbedded(f embed.FS, fm fsdir.T, force bool) error {
 			// shouldn't ever happen...
 			return err
 		}
+		origp := p
+		p = strings.ReplaceAll(origp, osSuffix, "")
 		if d.IsDir() {
 			if e := os.MkdirAll(fm.Path(p), 0755); e != nil {
 				log.Printf("could not create directory %s: %s", fm.Path(p), e)
@@ -33,7 +39,7 @@ func UnpackEmbedded(f embed.FS, fm fsdir.T, force bool) error {
 			}
 		}
 		log.Printf("unpacking embedded file %s", p)
-		b, err := f.ReadFile(p)
+		b, err := f.ReadFile(origp)
 		if err != nil {
 			// shouldn't ever happen...
 			log.Printf("error reading embedded file %s: %s", p, err)
@@ -49,7 +55,7 @@ func UnpackEmbedded(f embed.FS, fm fsdir.T, force bool) error {
 			mode = 0755
 		}
 		if err = os.WriteFile(fm.Path(p), b, mode); err != nil {
-			log.Printf("error writing embedded file %s to %s: %s", p, fm.Path(p), err)
+			log.Printf("error writing embedded file %s to %s: %s", origp, fm.Path(p), err)
 			return err
 		}
 		return nil
