@@ -32,7 +32,13 @@ func repoName(component string) string {
 }
 
 func (u *Config) BinaryURL(ver semver.Version) string {
-	return fmt.Sprintf(releaseURL, repoName(u.binfile), ver.String(), u.binfile, runtime.GOOS, "")
+	return fmt.Sprintf(releaseURL, repoName(u.binfile), ver.String(), u.binfile, runtime.GOOS, func() string {
+		if runtime.GOOS == "windows" {
+			return ".exe"
+		} else {
+			return ""
+		}
+	}())
 }
 
 func (u *Config) HashURL(ver semver.Version) string {
