@@ -3,6 +3,7 @@
 package relay
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -98,6 +99,9 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ensure the connection is accepted and fail otherwise
+	ctx := context.Background()
+
 	if t.HandleST != nil {
 		err = t.HandleST(p.Token)
 
@@ -160,7 +164,7 @@ func (t *T) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = wlnet.Splice(c, c2, t.MaxTime, t.BufSize)
+	err = wlnet.Splice(ctx, c, c2, t.MaxTime, t.BufSize)
 
 	if err != nil {
 		// TODO more granular errors
