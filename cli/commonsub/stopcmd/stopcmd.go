@@ -34,7 +34,7 @@ func Cmd(arg0 string) *cli.Subcmd {
 					log.Fatalf("could not terminate %s pid %d: %s", arg0, pid, err)
 				}
 			}
-			for i := 0; i < 10; i++ {
+			for i := 0; i < 30; i++ {
 				if !process.Exists(pid) {
 					log.Printf("stopped %s daemon (was pid %d)", arg0, pid)
 					fm.Del(pidfile)
