@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/blang/semver"
 	"github.com/wireleap/common/cli"
@@ -23,6 +24,9 @@ func Cmd(ctx commonlib.Context) *cli.Subcmd {
 		Desc:    "Supervise upgrade to a new version in a separate process (internal command)",
 		Hidden:  true,
 		Run: func(f fsdir.T) {
+			if runtime.GOOS == "windows" {
+				ctx.BinName = ctx.BinName + ".exe"
+			}
 			var (
 				oldbin  = f.Path(ctx.BinName + ".prev")
 				curbin  = f.Path(ctx.BinName)

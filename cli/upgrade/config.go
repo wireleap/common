@@ -42,7 +42,7 @@ func NewConfig(fm fsdir.T, arg0 string, interactive bool) *Config {
 	u := &Config{
 		fm:          fm,
 		q:           "quarantine",
-		binfile:     arg0,
+		binfile:     arg0 + maybeExe(),
 		interactive: interactive,
 	}
 	u.qpath = fm.Path(u.q)
@@ -65,7 +65,7 @@ func (u *Config) SkipVersion(v semver.Version) error {
 
 func (u *Config) GetChangelog(ver semver.Version) (_ string, err error) {
 	var (
-		chgfile  = u.binfile + ".md"
+		chgfile  = basename(u.binfile) + ".md"
 		qchgpath = u.fm.Path(u.q, chgfile)
 		chgurl   = u.ChangelogURL(ver)
 	)
@@ -125,7 +125,7 @@ func (u *Config) Download(out, url, distuser, distpass string) error {
 
 func (u *Config) GetHash(ver semver.Version) (sha512 []byte, err error) {
 	var (
-		hshfile  = u.binfile + ".hash"
+		hshfile  = basename(u.binfile) + ".hash"
 		hshurl   = u.HashURL(ver)
 		qhshpath = u.fm.Path(u.q, hshfile)
 	)
@@ -159,7 +159,7 @@ func (u *Config) GetHash(ver semver.Version) (sha512 []byte, err error) {
 		ids, e.PrimaryKey.KeyIdString(), e.PrimaryKey.CreationTime,
 	)
 	// update this if hash file format changes
-	sha512rex, err := regexp.Compile(fmt.Sprintf(` *([a-f0-9]{128})  %s`, u.binfile))
+	sha512rex, err := regexp.Compile(fmt.Sprintf(` *([a-f0-9]{128})  %s`, basename(u.binfile)))
 	if err != nil {
 		return nil, err
 	}
