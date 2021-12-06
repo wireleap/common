@@ -6,6 +6,13 @@ import "os"
 
 // Exists checks if a given PID exists.
 func Exists(pid int) bool {
-	_, err := os.FindProcess(pid)
-	return err == nil
+	p, err := os.FindProcess(pid)
+	if err == nil {
+		// release process handle
+		// https://github.com/golang/go/issues/33814
+		p.Release()
+		return true
+	} else {
+		return false
+	}
 }
