@@ -3,6 +3,7 @@
 package transport
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -63,16 +64,17 @@ func (t *T) DialWL(c0 net.Conn, protocol string, remote *url.URL, payload *wlnet
 	switch remote.Scheme {
 	case "target":
 		// c0/payload unused, could both be nil
-		c, err = t.Transport.Dial(protocol, remote.Host)
+		c, err = t.Transport.DialContext(context.TODO(), protocol, remote.Host)
 	case "wireleap":
 		tt := t.Transport
 		if c0 != nil {
 			// if previous connection supplied, use it to tunnel
-			t2 := t.Transport.Clone()
-			t2.DialTLS = func(_ string, _ string) (net.Conn, error) {
-				return tls.Client(c0, t.Transport.TLSClientConfig), nil
+			tt.DialContext = func(_ context.Context, _ string, _ string) (net.Conn, error) {
+				return c0, nil
 			}
-			tt = t2
+			tt.DialTLSContext = func(_ context.Context, _ string, _ string) (net.Conn, error) {
+				return tls.Client(c0, tt.TLSClientConfig), nil
+			}
 		}
 		// convert to a stdlib-known scheme
 		u2 := *remote
