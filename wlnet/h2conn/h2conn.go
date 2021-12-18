@@ -143,3 +143,9 @@ func (c *T) Close() error {
 	}
 	return nil
 }
+
+// TODO?
+func (c *T) SetReadDeadline(t time.Time) error  { return c.SetDeadline(t) }
+func (c *T) SetWriteDeadline(t time.Time) error { return c.SetDeadline(t) }
+func (c *T) RemoteAddr() net.Addr               { return nil }
+func (c *T) LocalAddr() net.Addr                { return nil }
