@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/wireleap/common/wlnet"
@@ -17,7 +18,11 @@ import (
 
 // T is a complete Wireleap network transport which can dial to other
 // wireleap-relays via H/2 over TCP and targets via TCP or UDP.
-type T struct{ *http.Transport }
+type T struct {
+	*http.Transport
+	mu sync.RWMutex
+	c0 net.Conn
+}
 
 // Options is a struct which contains options for initializing a T.
 type Options struct {
@@ -42,10 +47,6 @@ func New(opts Options) *T {
 		td = &tls.Dialer{NetDialer: nd, Config: tc}
 		t  = &T{
 			Transport: &http.Transport{
-				Dial:                  nd.Dial,
-				DialContext:           nd.DialContext,
-				DialTLS:               td.Dial,
-				DialTLSContext:        td.DialContext,
 				TLSClientConfig:       tc,
 				ResponseHeaderTimeout: opts.Timeout,
 				ForceAttemptHTTP2:     true,
@@ -56,6 +57,25 @@ func New(opts Options) *T {
 			},
 		}
 	)
+	// if previous connection supplied, use it to tunnel
+	t.Transport.DialContext = func(ctx context.Context, network, host string) (net.Conn, error) {
+		t.mu.RLock()
+		defer t.mu.RUnlock()
+		if t.c0 != nil {
+			return t.c0, nil
+		} else {
+			return nd.DialContext(ctx, network, host)
+		}
+	}
+	t.Transport.DialTLSContext = func(ctx context.Context, network, host string) (net.Conn, error) {
+		t.mu.RLock()
+		defer t.mu.RUnlock()
+		if t.c0 != nil {
+			return tls.Client(t.c0, tc), nil
+		} else {
+			return td.DialContext(ctx, network, host)
+		}
+	}
 	return t
 }
 
@@ -66,21 +86,14 @@ func (t *T) DialWL(c0 net.Conn, protocol string, remote *url.URL, payload *wlnet
 		// c0/payload unused, could both be nil
 		c, err = t.Transport.DialContext(context.TODO(), protocol, remote.Host)
 	case "wireleap":
-		tt := t.Transport
-		if c0 != nil {
-			// if previous connection supplied, use it to tunnel
-			tt.DialContext = func(_ context.Context, _ string, _ string) (net.Conn, error) {
-				return c0, nil
-			}
-			tt.DialTLSContext = func(_ context.Context, _ string, _ string) (net.Conn, error) {
-				return tls.Client(c0, tt.TLSClientConfig), nil
-			}
-		}
+		t.mu.Lock()
+		defer t.mu.Unlock()
+		t.c0 = c0
 		// convert to a stdlib-known scheme
 		u2 := *remote
 		u2.Scheme = "https"
 		// payload used for headers
-		c, err = h2conn.New(tt, u2.String(), payload.Headers())
+		c, err = h2conn.New(t.Transport, u2.String(), payload.Headers())
 	default:
 		err = fmt.Errorf("unsupported dial scheme '%s' in %s", remote.Scheme, remote)
 	}
