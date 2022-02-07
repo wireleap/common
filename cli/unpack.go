@@ -50,7 +50,7 @@ func UnpackEmbedded(f embed.FS, fm fsdir.T, force bool) error {
 			// +x
 			mode = 0755
 		}
-		if filepath.Base(p) == "wireleap_tun" {
+		if filepath.Base(p) == "wireleap_tun" || filepath.Base(p) == "wireleap_socks" {
 			// +x
 			mode = 0755
 		}
