@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 package duration
 
@@ -14,15 +14,7 @@ import (
 
 type T time.Duration
 
-func (d *T) UnmarshalJSON(b []byte) error {
-	var s string
-
-	err := json.Unmarshal(b, &s)
-
-	if err != nil {
-		return err
-	}
-
+func Parse(s string) (T, error) {
 	last := -1
 	var out string
 
@@ -39,7 +31,7 @@ func (d *T) UnmarshalJSON(b []byte) error {
 			days, err := strconv.Atoi(n)
 
 			if err != nil {
-				return errors.New("invalid value of days in duration")
+				return 0, errors.New("invalid value of days in duration")
 			}
 
 			h := days * 24
@@ -55,11 +47,25 @@ func (d *T) UnmarshalJSON(b []byte) error {
 
 	tmpd, err := time.ParseDuration(out)
 
+	return T(tmpd), err
+
+}
+
+func (d *T) UnmarshalJSON(b []byte) error {
+	var s string
+
+	err := json.Unmarshal(b, &s)
+
 	if err != nil {
 		return err
 	}
 
-	*d = T(tmpd)
+	tmpd, err := Parse(s)
+
+	if err == nil {
+		*d = tmpd
+	}
+
 	return nil
 }
 
