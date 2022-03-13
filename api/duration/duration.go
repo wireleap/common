@@ -12,8 +12,16 @@ import (
 
 // https://github.com/golang/go/issues/25705
 
+// A T represents the elapsed time between two instants
+// as an int64 nanosecond count. The representation limits the
+// largest representable duration to approximately 290 years.
 type T time.Duration
 
+// Parse parses a duration string.
+// A duration string is a possibly signed sequence of
+// decimal numbers, each with optional fraction and a unit suffix,
+// such as "300ms", "-1.5h" or "2h45m".
+// Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h", "d".
 func Parse(s string) (T, error) {
 	last := -1
 	var out string
