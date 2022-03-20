@@ -86,9 +86,5 @@ func (r *T) Validate() error {
 		r.Channel = "default"
 	}
 
-	if r.UpgradeChannel == "" {
-		r.UpgradeChannel = "default"
-	}
-
 	return nil
 }
