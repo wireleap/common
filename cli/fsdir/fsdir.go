@@ -113,13 +113,7 @@ func (t T) set(x interface{}, indent bool, ps ...string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(p, b, 0644)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ioutil.WriteFile(p, b, 0644)
 }
 
 // Rename moves file from old to new path.
