@@ -39,14 +39,14 @@ func KeypairStep(f fsdir.T) error {
 		return err
 	}
 	log.Printf("writing ed25519 private key seed to %s", f.Path(Seed))
-	if err = f.Set(jsonb.B(sk.Seed()), Seed); err != nil {
+	if err = f.SetIndented(jsonb.B(sk.Seed()), Seed); err != nil {
 		return err
 	}
 	if err = f.Chmod(0600, Seed); err != nil {
 		return err
 	}
 	log.Printf("writing ed25519 public key to %s", f.Path(Pub))
-	if err = f.Set(jsonb.PK(pk), Pub); err != nil {
+	if err = f.SetIndented(jsonb.PK(pk), Pub); err != nil {
 		return err
 	}
 	return nil

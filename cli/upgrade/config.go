@@ -60,7 +60,7 @@ func (u *Config) SkippedVersion() (v *semver.Version) {
 
 func (u *Config) SkipVersion(v semver.Version) error {
 	log.Printf("Skipping version %s", v)
-	return u.fm.Set(v, SKIP_FILENAME)
+	return u.fm.SetIndented(v, SKIP_FILENAME)
 }
 
 func (u *Config) GetChangelog(ver semver.Version) (_ string, err error) {

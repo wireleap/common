@@ -40,7 +40,7 @@ func LoadKey(fm fsdir.T, p ...string) (key ed25519.PrivateKey, err error) {
 			// decoding succeeded, so it's a valid old format key
 			// update the file
 			seed = jsonb.B(dec[:n])
-			err = fm.Set(&seed, p...)
+			err = fm.SetIndented(&seed, p...)
 
 			if err != nil {
 				return
