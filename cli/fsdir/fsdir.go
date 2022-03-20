@@ -117,6 +117,19 @@ func (t T) Set(x interface{}, ps ...string) error {
 	return nil
 }
 
+// Set marshals the x value into JSON and writes it to the the path ps.
+func (t T) Rename(oldPS, newPS []string) (err error) {
+	op := t.Path(oldPS...)
+	np := t.Path(newPS...)
+	err = mkdir(filepath.Dir(np))
+
+	if err == nil {
+		err = os.Rename(op, np)
+	}
+
+	return
+}
+
 // Del deletes the file or directory under a given path.
 func (t T) Del(ps ...string) error {
 	p := t.Path(ps...)
