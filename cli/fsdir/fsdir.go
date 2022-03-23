@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 // Package fsdir provides an abstract interface to a directory on disk.
 package fsdir

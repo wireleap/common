@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 // Package h2rwc implements a io.ReadWriteCloser composed from an io.Writer and
 // io.ReadCloser (most probably, http.ResponseWriter and server-side

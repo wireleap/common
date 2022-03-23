@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 // Package h2conn implements a net.Conn reads and writes over which are
 // actually directed towards a h/2 stream.

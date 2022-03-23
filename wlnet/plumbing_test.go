@@ -1,10 +1,10 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 package wlnet
 
 import (
-	"context"
 	"bytes"
+	"context"
 	"net"
 	"testing"
 	"time"

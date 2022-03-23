@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 /*
 Package signer defines and implements a simple Signer opaque identity which
