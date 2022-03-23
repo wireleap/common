@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 // Package tlscert provides a few helper functions for working with TLS
 // certificates.

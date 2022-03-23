@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 // The ststore package provides a concurrent in-memory sharetoken store which
 // is synced to disk after modifications.

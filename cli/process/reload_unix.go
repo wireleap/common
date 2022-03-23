@@ -1,6 +1,7 @@
+//go:build linux || darwin
 // +build linux darwin
 
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 package process
 
 import "syscall"

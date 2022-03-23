@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 // Package jsonb provides a custom []byte to JSON encoding.
 package jsonb

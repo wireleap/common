@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Wireleap
+// Copyright (c) 2022 Wireleap
 
 package wlnet
 
@@ -56,7 +56,7 @@ func Splice(ctx context.Context, src, dst io.ReadWriteCloser, maxtime time.Durat
 			log.Printf("splice error: %s", err)
 		}
 	// Cancel flow
-	case <- ctx.Done():
+	case <-ctx.Done():
 		err = nil
 		cancelled = true
 	}
