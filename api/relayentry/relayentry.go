@@ -13,9 +13,9 @@ import (
 )
 
 type T struct {
-	Role     string       `json:"role"`
-	Addr     *texturl.URL `json:"address"`
-	Pubkey   jsonb.PK     `json:"pubkey"`
+	Role     string       `json:"role,omitempty"`
+	Addr     *texturl.URL `json:"address,omitempty"`
+	Pubkey   jsonb.PK     `json:"pubkey,omitempty"`
 	Versions Versions     `json:"versions,omitempty"`
 	Key      string       `json:"key,omitempty"`
 	// Update channel for the relay, used in determining the update version to
@@ -30,11 +30,11 @@ type T struct {
 }
 
 type Versions struct {
-	Software      *semver.Version `json:"software"`
-	ClientRelay   *semver.Version `json:"client-relay"`
-	RelayRelay    *semver.Version `json:"relay-relay"`
-	RelayDir      *semver.Version `json:"relay-dir"`
-	RelayContract *semver.Version `json:"relay-contract"`
+	Software      *semver.Version `json:"software,omitempty"`
+	ClientRelay   *semver.Version `json:"client-relay,omitempty"`
+	RelayRelay    *semver.Version `json:"relay-relay,omitempty"`
+	RelayDir      *semver.Version `json:"relay-dir,omitempty"`
+	RelayContract *semver.Version `json:"relay-contract,omitempty"`
 }
 
 func (r *T) String() string {
