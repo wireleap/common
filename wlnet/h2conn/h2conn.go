@@ -65,6 +65,8 @@ func New(t http.RoundTripper, remote string, headers map[string]string) (c *T, e
 		if err == nil {
 			c.resp = res
 			c.ReadCloser = res.Body
+		} else {
+			c.cancel()
 		}
 		c.e <- err
 		close(c.e)
