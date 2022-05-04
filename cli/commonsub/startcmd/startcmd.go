@@ -53,7 +53,6 @@ func Cmd(arg0 string, do func(fsdir.T)) *cli.Subcmd {
 					Args:   []string{binary, "start", "--fg"},
 					Stdout: logfile,
 					Stderr: logfile,
-					Env:    append(os.Environ(), "WIRELEAP_BACKGROUND=1"),
 				}
 				if err = cmd.Start(); err != nil {
 					log.Fatalf("could not spawn background %s process: %s", arg0, err)
