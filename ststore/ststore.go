@@ -60,10 +60,26 @@ func New(dir string, keyf KeyFunc) (t *T, err error) {
 			return err
 		}
 
-		return t.Add(st)
+		k1, k2, k3 := t.keyf(st)
+		return t.add(k1, k2, k3, st)
 	})
 
 	return
+}
+
+func (t *T) add(k1, k2, k3 string, st *sharetoken.T) (err error) {
+	if t.sts[k1] == nil {
+		t.sts[k1] = st2map{}
+	}
+	if t.sts[k1][k2] == nil {
+		t.sts[k1][k2] = st1map{}
+	}
+	if t.sts[k1][k2][k3] == nil {
+		t.sts[k1][k2][k3] = st
+	} else {
+		return DuplicateSTError
+	}
+	return nil
 }
 
 // Add adds a sharetoken (st) to the map of accumulated sharetokens under the
@@ -74,23 +90,12 @@ func (t *T) Add(st *sharetoken.T) (err error) {
 	defer t.mu.Unlock()
 
 	k1, k2, k3 := t.keyf(st)
-
-	if t.sts[k1] == nil {
-		t.sts[k1] = st2map{}
-	}
-
-	if t.sts[k1][k2] == nil {
-		t.sts[k1][k2] = st1map{}
-	}
-
-	if t.sts[k1][k2][k3] == nil {
-		t.sts[k1][k2][k3] = st
-	} else {
-		return DuplicateSTError
+	err = t.add(k1, k2, k3, st)
+	if err != nil {
+		return
 	}
 
 	err = t.m.Set(st, k1, k3+".json")
-
 	if err != nil {
 		return
 	}
