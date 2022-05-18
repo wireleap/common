@@ -70,14 +70,19 @@ func (t *T) WriteTransaction(tr *transaction.T) error {
 			p.Currency = t.Currency
 		}
 
+		if len(p.Comment) > 0 {
+			p.Comment = " ; " + p.Comment
+		}
+
 		_, err = fmt.Fprintf(
 			w,
-			"    %s\t %s%d.%02d %s\t\n",
+			"    %s\t %s%d.%02d %s%s\n",
 			p.Account,
 			sign,
 			bucks,
 			cents,
 			p.Currency,
+			p.Comment,
 		)
 
 		if err != nil {
