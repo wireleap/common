@@ -5,6 +5,7 @@ package balance
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"math/big"
 	"sync"
 )
@@ -83,9 +84,8 @@ type Exported struct {
 }
 
 func ratFloor(x *big.Rat) int64 {
-	r := &big.Int{}
-	r.Div(x.Num(), x.Denom())
-	return r.Int64()
+	f, _ := x.Float64()
+	return int64(math.Floor(f))
 }
 
 func (t *T) Export() (r Exported) {
