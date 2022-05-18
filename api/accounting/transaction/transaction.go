@@ -20,4 +20,5 @@ type Posting struct {
 	Account  string
 	Amount   int64
 	Currency string
+	Comment  string
 }
