@@ -73,6 +73,11 @@ var (
 		Code: http.StatusAccepted,
 		Desc: "please upgrade your relay to the given version as soon as possible",
 	}
+
+	ErrNotImplemented = &T{
+		Code: http.StatusNotImplemented,
+		Desc: "feature not implemented yet",
+	}
 )
 
 func (t *T) Is(maybe error) bool {
