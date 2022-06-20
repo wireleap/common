@@ -129,8 +129,19 @@ func (c *Client) PerformRequestOnce(req *http.Request, out interface{}, cs ...st
 	return c.ParseResponse(res, out, cs...)
 }
 
+// PerformOnce is a convenience function for creating a new request, performing
+// it and parsing the JSON response into the receiving interface.
+func (c *Client) PerformOnce(method string, url string, in interface{}, out interface{}, cs ...string) (err error) {
+	req, err := c.NewRequest(method, url, in)
+	if err != nil {
+		return
+	}
+	err = c.PerformRequestOnce(req, out, cs...)
+	return
+}
+
 // Perform is a convenience function for creating a new request, performing it
-// and parsing the JSON response into the receiving interface.
+// and parsing the JSON response into the receiving interface (with retry logic).
 func (c *Client) Perform(method string, url string, in interface{}, out interface{}, cs ...string) (err error) {
 	req, err := c.NewRequest(method, url, in)
 
