@@ -3,6 +3,7 @@
 package status
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -103,13 +104,13 @@ func (t *T) Wrap(cause error) *T {
 }
 
 func (t *T) Error() string {
-	b, err := json.Marshal(t)
-
-	if err != nil {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(t); err != nil {
 		panic("should never happen")
 	}
-
-	return string(b)
+	return buf.String()
 }
 
 type Cause string
