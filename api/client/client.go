@@ -28,14 +28,31 @@ import (
 type Client struct {
 	*http.Client
 	signer.Signer
-	is []interfaces.T
+	is       []interfaces.T
+	RetryOpt RetryOptions
 
 	do func(*http.Request) (*http.Response, error)
 }
 
+type RetryOptions struct {
+	Tries    int
+	Interval time.Duration
+	Verbose  bool
+}
+
 // New creates a new API client using the given signer to sign API requests.
 func New(s signer.Signer, is ...interfaces.T) *Client {
-	return &Client{&http.Client{}, s, is, nil}
+	return &Client{
+		Client: &http.Client{},
+		Signer: s,
+		is:     is,
+		RetryOpt: RetryOptions{
+			Tries:    3,
+			Interval: 5 * time.Second,
+			Verbose:  true,
+		},
+		do: nil,
+	}
 }
 
 // NewMock creates a new API client which uses a given handler for handling all
@@ -144,33 +161,22 @@ func (c *Client) PerformOnce(method string, url string, in interface{}, out inte
 // and parsing the JSON response into the receiving interface (with retry logic).
 func (c *Client) Perform(method string, url string, in interface{}, out interface{}, cs ...string) (err error) {
 	req, err := c.NewRequest(method, url, in)
-
 	if err != nil {
 		return
 	}
-
-	tries := 3
-	interval := 5 * time.Second
-
-	for i := 1; i <= tries; i++ {
+	for i := 1; i <= c.RetryOpt.Tries; i++ {
 		err = c.PerformRequestOnce(req, out, cs...)
-
-		if err == nil || i == tries || !status.IsRetryable(err) {
+		if err == nil || i == c.RetryOpt.Tries || !status.IsRetryable(err) {
 			// success or max retries hit or no-retry error; return nil or last error
 			break
 		}
-
-		log.Printf(
-			"client: error performing %s %s: %s on try %d of %d, retrying in %s...",
-			method,
-			url,
-			err,
-			i,
-			tries,
-			interval,
-		)
-
-		time.Sleep(interval)
+		if c.RetryOpt.Verbose {
+			log.Printf(
+				"client: error performing %s %s: %s on try %d of %d, retrying in %s...",
+				method, url, err, i, c.RetryOpt.Tries, c.RetryOpt.Interval,
+			)
+		}
+		time.Sleep(c.RetryOpt.Interval)
 	}
 
 	return
