@@ -142,7 +142,7 @@ func (c *Client) PerformRequestOnce(req *http.Request, out interface{}, cs ...st
 	res, err = c.PerformRequestNoParse(req, cs...)
 
 	if err != nil {
-		return
+		return fmt.Errorf("error from PerformRequestNoParse: %w", err)
 	}
 
 	return c.ParseResponse(res, out, cs...)
