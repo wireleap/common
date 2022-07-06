@@ -131,8 +131,10 @@ func (c *Client) PerformRequestNoParse(req *http.Request, cs ...string) (res *ht
 		return
 	}
 
-	defer func() { req.Body = body }()
-	return c.Do(req)
+	res, err = c.Do(req)
+	req.Body.Close()
+	req.Body = body
+	return
 }
 
 func (c *Client) PerformRequestOnce(req *http.Request, out interface{}, cs ...string) (err error) {
