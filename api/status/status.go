@@ -25,6 +25,11 @@ var (
 		Desc: "OK",
 	}
 
+	NoContent = &T{
+		Code: http.StatusNoContent,
+		Desc: "no content",
+	}
+
 	ErrNotFound = &T{
 		Code: http.StatusNotFound,
 		Desc: "resource not found",
