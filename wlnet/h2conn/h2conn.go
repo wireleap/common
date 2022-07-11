@@ -103,18 +103,24 @@ func (c *T) Read(p []byte) (int, error) {
 		return 0, err
 	}
 	n, err := c.ReadCloser.Read(p)
-	if err != nil && c.resp != nil && c.resp.Trailer != nil {
-		sth := c.resp.Trailer.Get(status.Header)
-		if sth != "" {
-			var st status.T
-			if err = json.Unmarshal([]byte(sth), &st); err != nil {
-				return 0, fmt.Errorf("error while unmarshaling status trailer: %w", err)
+	if err != nil {
+		// wl-encoded error?
+		if c.resp != nil && c.resp.Trailer != nil {
+			sth := c.resp.Trailer.Get(status.Header)
+			if sth != "" {
+				var st status.T
+				if err = json.Unmarshal([]byte(sth), &st); err != nil {
+					return 0, fmt.Errorf("error while unmarshaling status trailer: %w", err)
+				}
+				if st.Is(status.OK) {
+					return n, nil
+				}
+				return n, &st
 			}
-			if st.Is(status.OK) {
-				return n, nil
-			}
-			return n, &st
 		}
+		// returning h2-native errors to a h2 caller causes the Go h2 client to
+		// get loopy for some reason, so guard against that by wrapping err
+		return n, fmt.Errorf("error from h2conn read: %w", err)
 	}
 	return n, err
 }
