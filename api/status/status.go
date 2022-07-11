@@ -168,21 +168,14 @@ func IsCircuitError(maybe error) bool {
 }
 
 func (t *T) WriteTo(w io.Writer) (int, error) {
-	b, err := json.Marshal(t)
-
-	if err != nil {
-		return 0, err
-	}
-
+	s := t.Error()
 	rw, ok := w.(http.ResponseWriter)
-
 	if ok {
 		rw.Header().Set("Content-Type", "application/json")
-		http.Error(rw, string(b), t.Code)
-		return len(b), nil
+		http.Error(rw, s, t.Code)
+		return len(s), nil
 	}
-
-	return w.Write(b)
+	return w.Write([]byte(s))
 }
 
 const Header = "wl-status"
