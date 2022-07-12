@@ -48,7 +48,7 @@ func (sub *Subcmd) SetDefaultUsage() {
 		options := ""
 
 		if n > 0 {
-			options = " [options]"
+			options = " [OPTIONS]"
 		}
 		fmt.Fprintf(o, "Usage: %s %s%s\n\n", sub.args0, sub.Name(), options)
 		fmt.Fprintf(o, "%s\n", sub.Desc)
