@@ -65,6 +65,12 @@ func TestFileMap(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
+			err = m.Rename([]string{f}, []string{f})
+
+			if err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 
