@@ -94,7 +94,7 @@ func (t T) Get(x interface{}, ps ...string) error {
 }
 
 // Set marshals the x value into JSON and writes it to the the path ps.
-func (t T) Set(x interface{}, ps ...string) error {
+func (t T) set(x interface{}, indent bool, ps ...string) error {
 	p := t.Path(ps...)
 	err := mkdir(filepath.Dir(p))
 
@@ -102,19 +102,28 @@ func (t T) Set(x interface{}, ps ...string) error {
 		return err
 	}
 
-	b, err := json.MarshalIndent(x, "", "    ")
+	var b []byte
+	if indent {
+		b, err = json.MarshalIndent(x, "", "    ")
+	} else {
+		b, err = json.Marshal(x)
+	}
 
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(p, b, 0644)
+	return ioutil.WriteFile(p, b, 0644)
+}
 
-	if err != nil {
-		return err
-	}
+// Set marshals the x value into JSON and writes it to the the path ps.
+func (t T) Set(x interface{}, ps ...string) error {
+	return t.set(x, false, ps...)
+}
 
-	return nil
+// Set marshals the x value into JSON and writes it to the the path ps.
+func (t T) SetIndented(x interface{}, ps ...string) error {
+	return t.set(x, true, ps...)
 }
 
 // Del deletes the file or directory under a given path.
