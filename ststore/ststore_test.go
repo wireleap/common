@@ -127,7 +127,7 @@ func TestLoad(t *testing.T) {
 	}
 
 	// Load malformed file and compare with original data
-	fp = filepath.Join(path, "malformed", "somedata.json")
+	fp = filepath.Join(tmpd, "malformed", "somecontract", "somedata.json")
 
 	var data2 []byte
 	if data2, err = os.ReadFile(fp); err != nil {
@@ -135,6 +135,74 @@ func TestLoad(t *testing.T) {
 	}
 
 	if comp := bytes.Compare(data, data2); comp != 0 {
+		t.Errorf("Strings do not match %v", comp)
+	}
+}
+
+func TestExpire(t *testing.T) {
+	tmpd, err := ioutil.TempDir("", "wltest.*")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		os.RemoveAll(tmpd)
+	})
+
+	s, err := New(tmpd, ContractKeyFunc)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pub, priv, err := ed25519.GenerateKey(nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sk := servicekey.New(priv)
+
+	sk.Contract.SettlementOpen = time.Now().Unix()
+	sk.Contract.SettlementClose = time.Now().Unix() + 100
+
+	st, err := sharetoken.New(sk, pub)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = s.Add(st)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Load original file
+	k1, _, k3 := ContractKeyFunc(st)
+	fp := filepath.Join(tmpd, k1, k3+".json")
+
+	var data_orig []byte
+	if data_orig, err = os.ReadFile(fp); err != nil {
+		t.Fatal(err)
+	}
+
+	err = s.Exp(st)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Load original file
+	fp = filepath.Join(tmpd, "expired", k1, k3+".json")
+
+	var data_new []byte
+	if data_new, err = os.ReadFile(fp); err != nil {
+		t.Fatal(err)
+	}
+
+	if comp := bytes.Compare(data_orig, data_new); comp != 0 {
 		t.Errorf("Strings do not match %v", comp)
 	}
 }
