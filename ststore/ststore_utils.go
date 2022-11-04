@@ -4,12 +4,12 @@
 // is synced to disk after modifications.
 package ststore
 
-func adaptedPath(subfolder string, ps ...string) []string {
+func adaptedPath(rootFolder string, ps ...string) []string {
 	if len(ps) != 2 {
 		return nil
 	}
 
-	return []string{ps[0], subfolder, ps[1]}
+	return append([]string{rootFolder}, ps...)
 }
 
 func MalformedPath(ps ...string) []string {
